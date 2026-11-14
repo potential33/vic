@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <div style="max-width:420px; margin:3rem auto;">
     <div class="card">
-        <h1 style="margin-top:0;">🏫 School</h1>
+        <h1 style="margin-top:0;">Chibugwu</h1>
         <p class="muted">Sign in to continue.</p>
 
         <?php if ($error): ?>
@@ -50,6 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
     <p class="muted" style="text-align:center; font-size:.85rem;">
-        Prototype · admin / admin123 (change after first login)
+        
     </p>
 </div>

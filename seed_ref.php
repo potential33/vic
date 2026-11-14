@@ -72,6 +72,9 @@ $subjects = [
     ['Government',          'GOV', 'senior'],
     ['Literature in English','LIT','senior'],
     ['Digital Technology',    'DGT', 'both'],
+    ['Christian Religious Studies', 'CRS', 'both'],
+    ['Agricultural Science', 'AGR', 'both'],
+    ['Home Economics',       'HME', 'both'],
 ];
 
 // Grading components: [name, max_score, sort_order].

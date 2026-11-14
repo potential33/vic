@@ -72,7 +72,7 @@ $isAdmin = $user && $user['role'] === 'admin';
 </main>
 
 <footer class="footer">
-    <small>School Manager · PHP/MySQL</small>
+    <small>Chibugwu</small>
 </footer>
 </body>
 </html>
