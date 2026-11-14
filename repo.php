@@ -32,6 +32,34 @@ function resolve_subject(string $name): ?int
     return $id === null ? null : (int) $id;
 }
 
+function create_linked_user(
+    string $username,
+    string $role,
+    ?int $teacherId,
+    ?int $studentId,
+    bool $mustChangePassword
+): void {
+    if (fetch_val("SELECT 1 FROM users WHERE username = ?", [$username])) {
+        throw new AppException("Cannot create login: username '{$username}' is already in use.");
+    }
+
+    q(
+        "INSERT INTO users
+            (username, password_hash, role, teacher_id, student_id, active,
+             must_change_password, created_at)
+         VALUES (?, ?, ?, ?, ?, 1, ?, ?)",
+        [
+            $username,
+            password_hash('password123', PASSWORD_DEFAULT),
+            $role,
+            $teacherId,
+            $studentId,
+            $mustChangePassword ? 1 : 0,
+            date('Y-m-d H:i:s'),
+        ]
+    );
+}
+
 function class_arm_full_name(int $classArmId): ?string
 {
     $row = fetch_one(
@@ -80,11 +108,26 @@ function student_create(
         throw new AppException("Admission number '{$admissionNo}' already exists.");
     }
 
-    return insert(
-        "INSERT INTO students (admission_no, full_name, gender, date_of_birth)
-         VALUES (?, ?, ?, ?)",
-        [$admissionNo, $fullName, $gender, $dob]
-    );
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $id = insert(
+            "INSERT INTO students (admission_no, full_name, gender, date_of_birth)
+             VALUES (?, ?, ?, ?)",
+            [$admissionNo, $fullName, $gender, $dob]
+        );
+        create_linked_user(strtolower($admissionNo), 'student', null, $id, true);
+        $pdo->commit();
+        return $id;
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        if ($e instanceof PDOException && db_is_duplicate_key($e)) {
+            throw new AppException('Admission number or login username already exists.');
+        }
+        throw $e;
+    }
 }
 
 function student_get(int $id): ?array
@@ -173,10 +216,27 @@ function teacher_create(string $fullName, ?string $email = null): int
         throw new AppException("Email '{$email}' is already in use.");
     }
 
-    return insert(
-        "INSERT INTO teachers (full_name, email) VALUES (?, ?)",
-        [$fullName, $email]
-    );
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $id = insert(
+            "INSERT INTO teachers (full_name, email) VALUES (?, ?)",
+            [$fullName, $email]
+        );
+        if ($email !== null) {
+            create_linked_user($email, 'teacher', $id, null, false);
+        }
+        $pdo->commit();
+        return $id;
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        if ($e instanceof PDOException && db_is_duplicate_key($e)) {
+            throw new AppException('Teacher email or login username already exists.');
+        }
+        throw $e;
+    }
 }
 
 function teacher_get(int $id): ?array

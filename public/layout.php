@@ -47,7 +47,7 @@ $isAdmin = $user && $user['role'] === 'admin';
         <?php endif; ?>
     </nav>
 <?php endif; ?>
-    <div style="margin-left:auto; display:flex; align-items:center; gap:.75rem;">
+    <div class="user-controls">
         <span style="font-size:.9rem;">
             <?= e($user['teacher_name'] ?? $user['username']) ?>
             <span class="tag" style="background:#374151;color:#e5e7eb;">

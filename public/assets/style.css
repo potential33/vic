@@ -1,12 +1,15 @@
 /* /public/app/public/assets/style.css */
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     margin: 0;
+    min-width: 320px;
     background: #f6f7f9;
     color: #1a1a1a;
     line-height: 1.5;
 }
+img, video, canvas { max-width: 100%; height: auto; }
 a { color: #2b5cd9; text-decoration: none; }
 a:hover { text-decoration: underline; }
 
@@ -22,15 +25,25 @@ a:hover { text-decoration: underline; }
 .topbar a { color: #e5e7eb; }
 .brand { font-weight: 700; font-size: 1.05rem; color: #fff; }
 .topbar nav { display: flex; gap: 1rem; flex-wrap: wrap; }
+.topbar nav a { white-space: nowrap; }
+.user-controls {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-width: 0;
+}
 
-main { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+main { width: 100%; max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
 
 .card {
+    min-width: 0;
     background: #fff;
     border-radius: 10px;
     padding: 1.25rem 1.5rem;
     box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 2px 6px rgba(0,0,0,.04);
     margin-bottom: 1rem;
+    overflow-x: auto;
 }
 .card h2 { margin-top: 0; }
 
@@ -43,9 +56,11 @@ main { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
 .stat .lbl { color: #666; font-size: .9rem; }
 
 table { width: 100%; border-collapse: collapse; }
+.card > table { width: max-content; min-width: 100%; }
 th, td { padding: .5rem .65rem; border-bottom: 1px solid #eee; text-align: left; }
 th { background: #f9fafb; font-weight: 600; font-size: .9rem; }
 tr:hover td { background: #fafbfc; }
+th, td { overflow-wrap: anywhere; }
 
 form .field { margin-bottom: .9rem; }
 form label { display: block; font-weight: 600; margin-bottom: .25rem; font-size: .9rem; }
@@ -125,3 +140,53 @@ tr.row-empty td   { background: #fafafa; }
 .tag { display: inline-block; padding: .1rem .5rem; background: #eef2ff; color: #3730a3; border-radius: 999px; font-size: .8rem; }
 
 .footer { text-align: center; padding: 1.5rem; color: #9ca3af; }
+
+@media (max-width: 800px) {
+    .topbar { gap: .75rem; padding: .75rem 1rem; }
+    .topbar nav {
+        order: 3;
+        flex: 1 0 100%;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: .25rem;
+        scrollbar-width: thin;
+    }
+}
+
+@media (max-width: 600px) {
+    main { margin: 1rem auto; padding: 0 .75rem; }
+    .topbar { padding: .65rem .75rem; }
+    .topbar nav { gap: .5rem 1rem; }
+    .user-controls {
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+        margin-left: 0;
+        gap: .5rem;
+    }
+    .user-controls > span { flex: 1 1 100%; }
+    .card { padding: 1rem; border-radius: 8px; }
+    h1 { font-size: clamp(1.45rem, 6vw, 2rem); }
+    h2 { font-size: 1.25rem; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+    .stat { min-width: 0; padding: .8rem; }
+    .stat .num { font-size: 1.5rem; }
+    form[style*="display:grid"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+    form[style*="display:flex"] {
+        flex-wrap: wrap !important;
+    }
+    form .actions { flex-wrap: wrap; }
+    .btn { min-height: 2.5rem; }
+    .flash { margin: .65rem .75rem 0; }
+    .signature { flex-wrap: wrap; gap: 1.5rem; }
+    .footer { padding: 1rem .75rem; }
+}
+
+@media (max-width: 360px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media print {
+    .card { overflow: visible; }
+}

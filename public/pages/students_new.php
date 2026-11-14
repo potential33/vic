@@ -10,7 +10,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ($_POST['gender'] ?? '') === '' ? null : $_POST['gender'],
             ($_POST['date_of_birth'] ?? '') === '' ? null : $_POST['date_of_birth']
         );
-        flash_set('success', 'Student added.');
+        flash_set(
+            'success',
+            'Student and login account created. Username: '
+                . strtolower(trim($_POST['admission_no'] ?? ''))
+                . '; temporary password: password123. The student must change it at first login.'
+        );
         redirect(route_link('students/view', ['id' => $id]));
     } catch (AppException $e) {
         $error = $e->getMessage();

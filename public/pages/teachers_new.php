@@ -4,11 +4,18 @@ $pageTitle = 'Add teacher';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        $email = ($_POST['email'] ?? '') === '' ? null : $_POST['email'];
         teacher_create(
             $_POST['full_name'] ?? '',
-            ($_POST['email'] ?? '') === '' ? null : $_POST['email']
+            $email
         );
-        flash_set('success', 'Teacher added.');
+        flash_set(
+            'success',
+            $email === null
+                ? 'Teacher added. Add an email address to create a login account.'
+                : 'Teacher and login account created. Username: '
+                    . strtolower(trim($email)) . '; temporary password: password123.'
+        );
         redirect(route_link('teachers'));
     } catch (AppException $e) {
         $error = $e->getMessage();
@@ -28,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input name="full_name" required value="<?= e(old('full_name')) ?>">
     </div>
     <div class="field">
-        <label>Email</label>
+        <label>Email (needed for teacher login)</label>
         <input type="email" name="email" value="<?= e(old('email')) ?>">
     </div>
     <div class="actions">

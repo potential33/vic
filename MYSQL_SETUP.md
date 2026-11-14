@@ -41,7 +41,15 @@ process. `seed_admin.php` is a development helper that creates the predictable
 data only if the database has no sessions; do not use demo seed data for a
 production school.
 
-To create login accounts for existing students and teachers, run:
+New students are given a login account automatically when created on the
+website, using their admission number as the username. New teachers with an
+email address are also given a login account automatically, using that email
+as the username. Both start with `password123`; students must change it on
+their first login. Teachers created without an email address do not get a
+login account.
+
+To create login accounts for existing students and teachers that were added
+before automatic account creation was enabled, run:
 
 ```sh
 php create_student_users.php
