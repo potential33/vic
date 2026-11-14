@@ -119,7 +119,6 @@ if ($studentId && $sessionId && $termId) {
                     <th>Subject</th>
                     <th style="text-align:right;">CA1</th>
                     <th style="text-align:right;">CA2</th>
-                    <th style="text-align:right;">CA3</th>
                     <th style="text-align:right;">Exam</th>
                     <th style="text-align:right;">Total</th>
                     <th style="text-align:center;">Grade</th>
@@ -132,7 +131,6 @@ if ($studentId && $sessionId && $termId) {
                         <small class="muted"><?= e($sub['code']) ?></small></td>
                     <td style="text-align:right;"><?= e($sub['ca1'] ?? '—') ?></td>
                     <td style="text-align:right;"><?= e($sub['ca2'] ?? '—') ?></td>
-                    <td style="text-align:right;"><?= e($sub['ca3'] ?? '—') ?></td>
                     <td style="text-align:right;"><?= e($sub['exam'] ?? '—') ?></td>
                     <td style="text-align:right;"><strong><?= e(fmt_num($sub['total'])) ?></strong></td>
                     <td style="text-align:center;"><strong><?= e($sub['grade']) ?></strong></td>
@@ -141,7 +139,7 @@ if ($studentId && $sessionId && $termId) {
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5" style="text-align:right;"><strong>Total / Average</strong></td>
+                    <td colspan="4" style="text-align:right;"><strong>Total / Average</strong></td>
                     <td style="text-align:right;"><strong><?= e(fmt_num($report['totals']['sum'])) ?></strong></td>
                     <td style="text-align:center;">
                         <strong><?= e(number_format($report['totals']['avg'], 1)) ?></strong>

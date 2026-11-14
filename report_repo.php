@@ -64,7 +64,7 @@ function report_student_term(int $studentId, int $sessionId, int $termId): ?arra
     // Subject-level results — only submitted or approved
     $rows = fetch_all(
         "SELECT sub.id AS subject_id, sub.name AS subject_name, sub.code,
-                r.ca1, r.ca2, r.ca3, r.exam, r.total, r.status
+                r.ca1, r.ca2, r.exam, r.total, r.status
          FROM results r
          JOIN subjects sub ON sub.id = r.subject_id
          WHERE r.enrollment_id = ? AND r.term_id = ?
@@ -86,7 +86,6 @@ function report_student_term(int $studentId, int $sessionId, int $termId): ?arra
             'code'         => $r['code'],
             'ca1'          => $r['ca1'],
             'ca2'          => $r['ca2'],
-            'ca3'          => $r['ca3'],
             'exam'         => $r['exam'],
             'total'        => $total,
             'grade'        => grade_band_for($total, $bands),

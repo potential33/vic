@@ -59,9 +59,8 @@ $n = (int) fetch_val("SELECT COUNT(*) FROM grading_components");
 if ($n === 0) {
     foreach ([
         ['CA1', 10, 1],
-        ['CA2', 10, 2],
-        ['CA3', 10, 3],
-        ['EXAM', 70, 4],
+        ['CA2', 20, 2],
+        ['EXAM', 70, 3],
     ] as [$name, $max, $order]) {
         q("INSERT INTO grading_components (name, max_score, sort_order, active)
            VALUES (?, ?, ?, 1)", [$name, $max, $order]);

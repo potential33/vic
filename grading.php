@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Validate a single grade entry.
  *
- * @param array $input  Keys: CA1, CA2, CA3, EXAM (any may be missing/''/null)
+ * @param array $input  Keys: active grading components (any may be missing/''/null)
  * @param array $limits
  * @return array {
  *   status: 'complete'|'partial'|'exam_only'|'blocked'|'empty',

@@ -21,7 +21,7 @@ $now  = date('Y-m-d H:i:s');
 $n = 0;
 
 foreach ($teachers as $t) {
-    $username = strtolower($t['email']);
+    $username = strtolower(trim($t['email']));
     // Skip if username collides with an existing user
     if (fetch_val("SELECT 1 FROM users WHERE username = ?", [$username])) {
         echo "SKIP {$t['full_name']}: username {$username} already taken.\n";

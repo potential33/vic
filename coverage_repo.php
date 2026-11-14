@@ -92,7 +92,7 @@ function coverage_for_class(int $classArmId, int $sessionId, int $termId): array
         $submittedMap[(int)$r['enrollment_id']][(int)$r['subject_id']] = true;
     }
 
-    $subjectReport = [];
+    $subjectReports = [];
     $totals = ['expected'=>0, 'submitted'=>0, 'exempted'=>0, 'missing'=>0];
 
     foreach ($subjects as $sub) {
@@ -123,7 +123,7 @@ function coverage_for_class(int $classArmId, int $sessionId, int $termId): array
         $missing = $expected - $submitted;
         $status = $missing === 0 ? 'complete' : ($submitted === 0 ? 'empty' : 'partial');
 
-        $subjectReport[] = [
+        $subjectReports[] = [
             'id'               => $sid,
             'name'             => $sub['name'],
             'code'             => $sub['code'],

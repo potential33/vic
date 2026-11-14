@@ -94,11 +94,48 @@ function auth_attempt(string $username, string $password): array
         $rl = ['count' => 0, 'first' => $now, 'locked_until' => 0];
     }
 
-    $username = trim($username);
+    $identifier = strtolower(trim($username));
     $user = fetch_one(
-        "SELECT * FROM users WHERE username = ? AND active = 1",
-        [strtolower($username)]
+        "SELECT * FROM users
+         WHERE LOWER(TRIM(username)) = ? AND active = 1",
+        [$identifier]
     );
+
+    if (!$user) {
+        $matches = fetch_all(
+            "SELECT DISTINCT u.*
+             FROM users u
+             LEFT JOIN students s ON s.id = u.student_id
+             LEFT JOIN teachers t ON t.id = u.teacher_id
+             WHERE u.active = 1
+               AND (
+                 LOWER(TRIM(s.admission_no)) = ?
+                 OR LOWER(TRIM(t.email)) = ?
+               )",
+            [$identifier, $identifier]
+        );
+        if (count($matches) === 1) {
+            $user = $matches[0];
+        }
+    }
+
+    if (!$user) {
+        $matches = fetch_all(
+            "SELECT DISTINCT u.*
+             FROM users u
+             LEFT JOIN students s ON s.id = u.student_id
+             LEFT JOIN teachers t ON t.id = u.teacher_id
+             WHERE u.active = 1
+               AND (
+                 LOWER(TRIM(s.full_name)) = ?
+                 OR LOWER(TRIM(t.full_name)) = ?
+               )",
+            [$identifier, $identifier]
+        );
+        if (count($matches) === 1) {
+            $user = $matches[0];
+        }
+    }
 
     $ok = $user && password_verify($password, $user['password_hash']);
 

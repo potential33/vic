@@ -67,14 +67,18 @@ $subjects = [
     ['Chemistry',           'CHM', 'senior'],
     ['Physics',             'PHY', 'senior'],
     ['Further Mathematics', 'FMT', 'senior'],
+    ['Commerce',            'COM', 'senior'],
+    ['Economics',           'ECO', 'senior'],
+    ['Government',          'GOV', 'senior'],
+    ['Literature in English','LIT','senior'],
+    ['Digital Technology',    'DGT', 'both'],
 ];
 
 // Grading components: [name, max_score, sort_order].
 $gradingComponents = [
     ['CA1',  10, 1],
-    ['CA2',  10, 2],
-    ['CA3',  10, 3],
-    ['Exam', 70, 4],
+    ['CA2',  20, 2],
+    ['EXAM', 70, 3],
 ];
 
 // Grading bands: [name, min_score, label, sort_order].
@@ -186,15 +190,29 @@ foreach ($classes as [$className, $classSection]) {
 
 // --- grading_components ---
 foreach ($gradingComponents as [$name, $maxScore, $sortOrder]) {
-    if (!fetch_val("SELECT id FROM grading_components WHERE name = ?", [$name])) {
+    $componentId = fetch_val(
+        "SELECT id FROM grading_components WHERE UPPER(name) = ? ORDER BY id LIMIT 1",
+        [$name]
+    );
+    if ($componentId === null) {
         q(
             "INSERT INTO grading_components (name, max_score, sort_order, active)
              VALUES (?, ?, ?, 1)",
             [$name, $maxScore, $sortOrder]
         );
         $counts['grading_components']++;
+    } else {
+        q(
+            "UPDATE grading_components
+             SET name = ?, max_score = ?, sort_order = ?, active = 1
+             WHERE id = ?",
+            [$name, $maxScore, $sortOrder, $componentId]
+        );
     }
 }
+q("UPDATE grading_components
+   SET active = 0
+   WHERE UPPER(name) NOT IN ('CA1', 'CA2', 'EXAM')");
 
 // --- grading_bands ---
 foreach ($gradingBands as [$name, $minScore, $label, $sortOrder]) {

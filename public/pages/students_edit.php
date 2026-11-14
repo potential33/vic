@@ -5,6 +5,17 @@ $student = student_get($id);
 if (!$student) throw new AppException('Student not found.');
 $pageTitle = 'Edit ' . $student['full_name'];
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_delete'])) {
+    try {
+        student_delete($id);
+        flash_set('success', 'Student deleted.');
+        redirect(route_link('students'));
+    } catch (AppException $e) {
+        flash_set('error', $e->getMessage());
+        redirect(route_link('students/edit', ['id' => $id]));
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         student_update($id, [
@@ -57,22 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 
 <form method="post" action="<?= e(route_link('students/edit', ['id' => $id])) ?>"
-  <?= csrf_field() ?>
       onsubmit="return confirm('Delete this student? This cannot be undone.')" style="margin-top:1rem;">
+    <?= csrf_field() ?>
     <input type="hidden" name="_delete" value="1">
     <button class="btn danger" type="submit">Delete student</button>
 </form>
-
-<?php
-// Handle delete from the same page
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_delete'])) {
-    try {
-        student_delete($id);
-        flash_set('success', 'Student deleted.');
-        redirect(route_link('students'));
-    } catch (AppException $e) {
-        flash_set('error', $e->getMessage());
-        redirect(route_link('students/edit', ['id' => $id]));
-    }
-}
-?>

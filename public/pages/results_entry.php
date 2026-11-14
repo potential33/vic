@@ -57,7 +57,7 @@ if ($myTeacherId !== null && $subjectId && $classArmId) {
         throw new AppException('You are not assigned to teach this subject in this class.');
     }
 }
-$weights = $limits; // ['CA1'=>10, 'CA2'=>10, 'CA3'=>10, 'EXAM'=>70]
+$weights = $limits;
 
 // Handle row save
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['save_row'])) {
@@ -172,7 +172,7 @@ $rows = ($subjectId && $classArmId && $termId)
     <th>Student</th>
     <?php foreach (array_keys($weights) as $comp): ?>
         <th style="width:70px;">
-            <?= e($comp) ?><br>
+            <?= e($comp === 'EXAM' ? 'Exam' : $comp) ?><br>
             <small class="muted">/<?= e($weights[$comp]) ?></small>
         </th>
     <?php endforeach; ?>

@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?= csrf_field() ?>
             <input type="hidden" name="next" value="<?= e($next) ?>">
             <div class="field">
-                <label>Username</label>
+                <label>Username, admission number, email, or full name</label>
                 <input name="username" required autofocus
                        value="<?= e($username) ?>" autocomplete="username">
             </div>

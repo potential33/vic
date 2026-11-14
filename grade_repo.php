@@ -6,7 +6,7 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/AppException.php';
 require_once __DIR__ . '/grading.php';
 
-/** Active weight set: ['CA1'=>10, 'CA2'=>10, 'CA3'=>10, 'EXAM'=>70] */
+/** Active weight set, for example ['CA1'=>10, 'CA2'=>20, 'EXAM'=>70]. */
 function grade_limits(): array
 {
     $rows = fetch_all("SELECT name, max_score FROM grading_components
@@ -29,7 +29,7 @@ function grade_get(int $enrollmentId, int $subjectId, int $termId): ?array
 /**
  * Save a grade entry for one student/subject/term.
  *
- * @param array $input Raw $_POST values keyed CA1,CA2,CA3,EXAM
+ * @param array $input Raw $_POST values keyed by active grading component.
  * @return array {
  *   ok: bool,
  *   status?: 'draft'|'submitted',
@@ -128,7 +128,7 @@ function grades_for_class_term(
     return fetch_all(
         "SELECT e.id AS enrollment_id,
                 s.id AS student_id, s.admission_no, s.full_name,
-                r.id AS result_id, r.ca1, r.ca2, r.ca3, r.exam, r.total,
+                r.id AS result_id, r.ca1, r.ca2, r.exam, r.total,
                 r.status AS result_status
          FROM enrollments e
          JOIN students s ON s.id = e.student_id
@@ -161,7 +161,7 @@ function grade_submit_term_for_class(
     // Any blocked (missing exam w/ CA) or partial rows?
     $rows = fetch_all(
         "SELECT e.id AS enrollment_id, s.full_name,
-                r.status, r.exam, r.ca1, r.ca2, r.ca3
+                r.status, r.exam, r.ca1, r.ca2
          FROM enrollments e
          JOIN students s ON s.id = e.student_id
          LEFT JOIN results r
@@ -174,8 +174,7 @@ function grade_submit_term_for_class(
 
     $problems = [];
     foreach ($rows as $r) {
-        $hasAny = $r['ca1'] !== null || $r['ca2'] !== null
-               || $r['ca3'] !== null || $r['exam'] !== null;
+        $hasAny = $r['ca1'] !== null || $r['ca2'] !== null || $r['exam'] !== null;
         if ($r['status'] === null) {
             if ($hasAny) {
                 $problems[] = "{$r['full_name']}: incomplete draft";
