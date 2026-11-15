@@ -32,7 +32,13 @@ database, initialize the application's defaults with:
 php migrate_settings.php
 php migrate_results.php
 php migrate_reports.php
+php migrate_class_teachers.php
 ```
+
+For production, leave `APP_DEBUG` unset or set it to `0`, and disable
+`display_errors` in the hosting PHP settings. The application hides exception
+details by default and marks session cookies secure when the request uses
+HTTPS; enable and force SSL for the domain before launch.
 
 Create the first administrator with your deployment's account-management
 process. `seed_admin.php` is a development helper that creates the predictable
@@ -41,12 +47,14 @@ process. `seed_admin.php` is a development helper that creates the predictable
 data only if the database has no sessions; do not use demo seed data for a
 production school.
 
-New students are given a login account automatically when created on the
-website, using their admission number as the username. New teachers with an
-email address are also given a login account automatically, using that email
-as the username. Both start with `password123`; students must change it on
-their first login. Teachers created without an email address do not get a
-login account.
+New students are enrolled in a selected session and class arm and given a
+login account automatically when created on the website, using their
+admission number as the username. Student, enrollment, and login account are
+created together. New teachers with an email address are also given a login
+account automatically, using that email as the username. Both start with
+`password123`; students must change it on their first login. Teachers created
+without an email address do not get a login account. The separate enrollment
+tool remains available for enrolling existing students in later sessions.
 
 To create login accounts for existing students and teachers that were added
 before automatic account creation was enabled, run:
@@ -61,6 +69,14 @@ their email address. Both account scripts set the initial password to
 `password123`; student accounts require a password change after sign-in.
 Accounts already linked to a student or teacher are left unchanged by these
 scripts.
+
+Administrators assign class/form teachers from the **Teacher assignments**
+page. Each class arm can have one class/form teacher per session. A teacher
+must have a subject or class/form assignment to sign in; subject teachers keep
+their grade-entry access. Class/form teachers can add and enroll students only
+in the class arms and sessions assigned to them. The database migration for
+this feature is `migrate_class_teachers.php`; also run it on existing databases
+before deploying the updated application.
 
 ## Importing an existing SQLite database
 

@@ -60,8 +60,10 @@ $subjects = [
     ['English Language',    'ENG', 'both'],
     ['Mathematics',         'MTH', 'both'],
     ['Basic Science',       'BSC', 'junior'],
-    ['Social Studies',      'SOS', 'junior'],
-    ['Civic Education',     'CIV', 'both'],
+    ['Basic Technology',    'BTE', 'junior'],
+    ['History',    'HIS', 'junior'],
+    ['National Value',    'NVA', 'junior'],
+    ['Citizenship And Heritage',     'CIV', 'both'],
     ['Computer Studies',    'CMP', 'both'],
     ['Biology',             'BIO', 'senior'],
     ['Chemistry',           'CHM', 'senior'],
@@ -74,7 +76,13 @@ $subjects = [
     ['Digital Technology',    'DGT', 'both'],
     ['Christian Religious Studies', 'CRS', 'both'],
     ['Agricultural Science', 'AGR', 'both'],
-    ['Home Economics',       'HME', 'both'],
+    ['Home Economics',       'HME', 'junior'],
+    ['Fashion',               'FSH', 'both'],
+    ['Igbo',               'IGB', 'both'],
+    ['Food And Nutrition',               'FAN', 'both'],
+    ['Leather Work',               'LWK', 'both'],
+    ['Marketing',               'MRK', 'senior'],
+    ['Business Studies',               'BUS', 'junior'],
 ];
 
 // Grading components: [name, max_score, sort_order].

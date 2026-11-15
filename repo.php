@@ -90,6 +90,8 @@ function subjects_available_for_class(int $classId): array
 function student_create(
     string $admissionNo,
     string $fullName,
+    int $classArmId,
+    int $sessionId,
     ?string $gender = null,
     ?string $dob = null
 ): int {
@@ -117,6 +119,7 @@ function student_create(
             [$admissionNo, $fullName, $gender, $dob]
         );
         create_linked_user(strtolower($admissionNo), 'student', null, $id, true);
+        enroll($id, $classArmId, $sessionId);
         $pdo->commit();
         return $id;
     } catch (Throwable $e) {
@@ -447,5 +450,95 @@ function assignments_for_class(int $subjectId, int $classArmId, int $sessionId):
          WHERE ts.subject_id = ? AND ts.class_arm_id = ? AND ts.session_id = ?
          ORDER BY t.full_name",
         [$subjectId, $classArmId, $sessionId]
+    );
+}
+
+function assign_class_teacher(int $teacherId, int $classArmId, int $sessionId): int
+{
+    if (!teacher_get($teacherId)) throw new AppException('Teacher not found.');
+    if (!fetch_val("SELECT 1 FROM class_arms WHERE id = ?", [$classArmId])) {
+        throw new AppException('Class arm not found.');
+    }
+    if (!fetch_val("SELECT 1 FROM sessions WHERE id = ?", [$sessionId])) {
+        throw new AppException('Session not found.');
+    }
+
+    $existing = fetch_one(
+        "SELECT cta.id, t.full_name
+         FROM class_teacher_assignments cta
+         JOIN teachers t ON t.id = cta.teacher_id
+         WHERE cta.class_arm_id = ? AND cta.session_id = ?",
+        [$classArmId, $sessionId]
+    );
+    if ($existing) {
+        throw new AppException(
+            'This class already has a form teacher assigned: ' . $existing['full_name'] . '.'
+        );
+    }
+
+    try {
+        return insert(
+            "INSERT INTO class_teacher_assignments (teacher_id, class_arm_id, session_id)
+             VALUES (?, ?, ?)",
+            [$teacherId, $classArmId, $sessionId]
+        );
+    } catch (PDOException $e) {
+        if (db_is_duplicate_key($e)) {
+            throw new AppException('This class already has a form teacher for that session.');
+        }
+        throw $e;
+    }
+}
+
+function unassign_class_teacher(int $assignmentId): void
+{
+    if (!fetch_val("SELECT 1 FROM class_teacher_assignments WHERE id = ?", [$assignmentId])) {
+        throw new AppException('Class teacher assignment not found.');
+    }
+    q("DELETE FROM class_teacher_assignments WHERE id = ?", [$assignmentId]);
+}
+
+function class_teacher_assignments_for_session(int $sessionId): array
+{
+    return fetch_all(
+        "SELECT cta.id, cta.teacher_id, cta.class_arm_id, cta.session_id,
+                t.full_name AS teacher,
+                CONCAT(c.name, ' ', ca.arm) AS class_label,
+                ses.name AS session
+         FROM class_teacher_assignments cta
+         JOIN teachers t ON t.id = cta.teacher_id
+         JOIN class_arms ca ON ca.id = cta.class_arm_id
+         JOIN classes c ON c.id = ca.class_id
+         JOIN sessions ses ON ses.id = cta.session_id
+         WHERE cta.session_id = ?
+         ORDER BY class_label",
+        [$sessionId]
+    );
+}
+
+function class_teacher_assignments_for_teacher(int $teacherId, ?int $sessionId = null): array
+{
+    $sql = "SELECT cta.id, cta.teacher_id, cta.class_arm_id, cta.session_id,
+                   CONCAT(c.name, ' ', ca.arm) AS class_label, ses.name AS session
+            FROM class_teacher_assignments cta
+            JOIN class_arms ca ON ca.id = cta.class_arm_id
+            JOIN classes c ON c.id = ca.class_id
+            JOIN sessions ses ON ses.id = cta.session_id
+            WHERE cta.teacher_id = ?";
+    $params = [$teacherId];
+    if ($sessionId !== null) {
+        $sql .= " AND cta.session_id = ?";
+        $params[] = $sessionId;
+    }
+    $sql .= " ORDER BY ses.name DESC, class_label";
+    return fetch_all($sql, $params);
+}
+
+function is_class_teacher_for(int $teacherId, int $classArmId, int $sessionId): bool
+{
+    return (bool) fetch_val(
+        "SELECT 1 FROM class_teacher_assignments
+         WHERE teacher_id = ? AND class_arm_id = ? AND session_id = ?",
+        [$teacherId, $classArmId, $sessionId]
     );
 }

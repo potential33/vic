@@ -1,6 +1,10 @@
 <?php
 // /public/app/public/pages/students_list.php
 $pageTitle = 'Students';
+$canAddStudent = auth_role_is('admin');
+if (!$canAddStudent && ($teacherId = auth_teacher_id()) !== null) {
+    $canAddStudent = (bool) class_teacher_assignments_for_teacher($teacherId);
+}
 
 $sessions   = fetch_all("SELECT id, name FROM sessions ORDER BY name DESC");
 $classArms  = fetch_all(
@@ -18,7 +22,9 @@ $students = student_list($classArmId, $sessionId, $gender);
 ?>
 <div style="display:flex; justify-content:space-between; align-items:center;">
     <h1>Students <span class="muted" style="font-weight:normal; font-size:1rem;">(<?= count($students) ?>)</span></h1>
-    <a href="<?= e(route_link('students/new')) ?>" class="btn">+ Add student</a>
+    <?php if ($canAddStudent): ?>
+        <a href="<?= e(route_link('students/new')) ?>" class="btn">+ Add student</a>
+    <?php endif; ?>
 </div>
 
 <form method="get" class="card" style="display:flex; gap:.75rem; flex-wrap:wrap; align-items:end;">

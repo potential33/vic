@@ -25,7 +25,7 @@ $routes = [
     'me/report'          => ['me_report.php',          'GET',      'student'],
 
     'students'           => ['students_list.php',      'GET',      'auth'],
-    'students/new'       => ['students_new.php',       'GET|POST', 'admin'],
+    'students/new'       => ['students_new.php',       'GET|POST', 'auth'],
     'students/view'      => ['students_view.php',      'GET',      'auth'],
     'students/edit'      => ['students_edit.php',      'GET|POST', 'admin'],
 
@@ -98,7 +98,11 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     $error = 'Something went wrong.';
-    if (($_ENV['APP_DEBUG'] ?? '1') === '1') {
+    $appDebug = getenv('APP_DEBUG');
+    if ($appDebug === false) {
+        $appDebug = $_ENV['APP_DEBUG'] ?? '0';
+    }
+    if ($appDebug === '1') {
         $error .= ' — ' . $e->getMessage();
     }
     require __DIR__ . '/pages/_error.php';

@@ -7,9 +7,9 @@ $sessionId = isset($_GET['session']) && $_GET['session'] !== ''
     ? (int) $_GET['session']
     : ($sessions[0]['id'] ?? null);
 
-$rows = $sessionId
+$subjectRows = $sessionId
     ? fetch_all(
-        "SELECT ts.id, t.full_name AS teacher, sub.name AS subject,
+        "SELECT ts.id, t.full_name AS teacher, sub.name AS assignment,
                 CONCAT(c.name, ' ', ca.arm) AS class_label
          FROM teacher_subjects ts
          JOIN teachers t ON t.id = ts.teacher_id
@@ -21,15 +21,13 @@ $rows = $sessionId
         [$sessionId]
     )
     : [];
+$classTeacherRows = $sessionId ? class_teacher_assignments_for_session($sessionId) : [];
 ?>
 <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h1>Teacher assignments</h1>
-  <div style="display:flex; justify-content:space-between; align-items:center;">
     <h1>Teacher assignments</h1>
     <?php if (auth_role_is('admin')): ?>
         <a href="<?= e(route_link('assignments/new')) ?>" class="btn">+ Assign teacher</a>
     <?php endif; ?>
-  </div>
 </div>
 
 <form method="get" class="card" style="display:flex; gap:.75rem; align-items:end;">
@@ -38,7 +36,7 @@ $rows = $sessionId
         <label>Session</label>
         <select name="session" onchange="this.form.submit()">
             <?php foreach ($sessions as $s): ?>
-                <option value="<?= e($s['id']) ?>" <?= (int)$s['id'] === $sessionId ? 'selected' : '' ?>>
+                <option value="<?= e($s['id']) ?>" <?= (int) $s['id'] === $sessionId ? 'selected' : '' ?>>
                     <?= e($s['name']) ?>
                 </option>
             <?php endforeach; ?>
@@ -47,26 +45,41 @@ $rows = $sessionId
 </form>
 
 <div class="card">
-    <?php if (!$rows): ?>
+    <?php if (!$subjectRows && !$classTeacherRows): ?>
         <p class="muted">No assignments for this session.</p>
     <?php else: ?>
-    <>
-        <thead><tr><th>Teacher</th><th>Subject</th><th>Class</th><th></th></tr></thead>
-        <tbody>
-        <?php foreach ($rows as $r): ?>
-            <>
-                    <td><?= e($r['class_label']) ?></td>
-    <?php if (auth_role_is('admin')): ?>
-    <td>
-        <a class="btn small secondary"
-           href="<?= e(route_link('assignments/delete', ['id' => $r['id']])) ?>">Unassign</a>
-    </td>
-    <?php else: ?>
-    <td></td>
-    <?php endif; ?>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+        <table>
+            <thead>
+                <tr><th>Teacher</th><th>Assignment</th><th>Class</th><th></th></tr>
+            </thead>
+            <tbody>
+                <?php foreach ($subjectRows as $row): ?>
+                    <tr>
+                        <td><?= e($row['teacher']) ?></td>
+                        <td><?= e($row['assignment']) ?></td>
+                        <td><?= e($row['class_label']) ?></td>
+                        <td>
+                            <?php if (auth_role_is('admin')): ?>
+                                <a class="btn small secondary"
+                                   href="<?= e(route_link('assignments/delete', ['id' => $row['id'], 'type' => 'subject'])) ?>">Unassign</a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php foreach ($classTeacherRows as $row): ?>
+                    <tr>
+                        <td><?= e($row['teacher']) ?></td>
+                        <td>Class/form teacher</td>
+                        <td><?= e($row['class_label']) ?></td>
+                        <td>
+                            <?php if (auth_role_is('admin')): ?>
+                                <a class="btn small secondary"
+                                   href="<?= e(route_link('assignments/delete', ['id' => $row['id'], 'type' => 'class_teacher'])) ?>">Unassign</a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     <?php endif; ?>
 </div>

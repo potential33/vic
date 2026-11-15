@@ -21,15 +21,28 @@ if ($classArmId) {
     if ($classId) $availableSubjects = subjects_available_for_class((int)$classId);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['assignment_action'] ?? '') === 'assign') {
     try {
-        $id = assign_teacher(
-            (int) ($_POST['teacher_id']   ?? 0),
-            (int) ($_POST['subject_id']   ?? 0),
-            (int) ($_POST['class_arm_id'] ?? 0),
-            (int) ($_POST['session_id']   ?? 0)
-        );
-        flash_set('success', 'Assignment created.');
+        $assignmentType = $_POST['assignment_type'] ?? '';
+        if (!in_array($assignmentType, ['subject', 'class_teacher'], true)) {
+            throw new AppException('Invalid assignment type.');
+        }
+        if ($assignmentType === 'class_teacher') {
+            assign_class_teacher(
+                (int) ($_POST['teacher_id'] ?? 0),
+                (int) ($_POST['class_arm_id'] ?? 0),
+                (int) ($_POST['session_id'] ?? 0)
+            );
+            flash_set('success', 'Class teacher assigned.');
+        } else {
+            assign_teacher(
+                (int) ($_POST['teacher_id']   ?? 0),
+                (int) ($_POST['subject_id']   ?? 0),
+                (int) ($_POST['class_arm_id'] ?? 0),
+                (int) ($_POST['session_id']   ?? 0)
+            );
+            flash_set('success', 'Subject teacher assigned.');
+        }
         redirect(route_link('assignments', ['session' => (int) $_POST['session_id']]));
     } catch (AppException $e) {
         $error = $e->getMessage();
@@ -44,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <form method="post" class="card">
     <?= csrf_field() ?>
+    <input type="hidden" name="assignment_type" value="subject">
 
     <div class="field">
         <label>Session</label>
@@ -94,7 +108,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="actions">
-        <button class="btn" type="submit">Assign</button>
+        <button class="btn" type="submit" name="assignment_action" value="assign">Assign subject</button>
         <a class="btn secondary" href="<?= e(route_link('assignments')) ?>">Cancel</a>
+    </div>
+</form>
+
+<h2>Assign class/form teacher</h2>
+<form method="post" class="card">
+    <?= csrf_field() ?>
+    <input type="hidden" name="assignment_type" value="class_teacher">
+    <div class="field">
+        <label>Session</label>
+        <select name="session_id" required>
+            <option value="">— pick —</option>
+            <?php foreach ($sessions as $s): ?>
+                <option value="<?= e($s['id']) ?>"><?= e($s['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="field">
+        <label>Class arm</label>
+        <select name="class_arm_id" required>
+            <option value="">— pick —</option>
+            <?php foreach ($classArms as $ca): ?>
+                <option value="<?= e($ca['id']) ?>"><?= e($ca['class_name'] . ' ' . $ca['arm']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="field">
+        <label>Teacher</label>
+        <select name="teacher_id" required>
+            <option value="">— pick —</option>
+            <?php foreach ($teachers as $t): ?>
+                <option value="<?= e($t['id']) ?>"><?= e($t['full_name']) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="actions">
+        <button class="btn" type="submit" name="assignment_action" value="assign">Assign class teacher</button>
     </div>
 </form>

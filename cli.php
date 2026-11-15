@@ -62,6 +62,8 @@ while (true) {
             safe(fn() => student_create(
                 ask('Admission no'),
                 ask('Full name'),
+                (int) ask('Class arm id'),
+                (int) ask('Session id'),
                 ask('Gender (M/F, blank for none)', ''),
                 ask('DOB YYYY-MM-DD (blank for none)', '')
             ));

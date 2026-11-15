@@ -5,6 +5,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/AppException.php';
 
+function auth_teacher_has_assignment(int $teacherId): bool
+{
+    return (bool) fetch_val(
+        "SELECT EXISTS (
+             SELECT 1 FROM teacher_subjects WHERE teacher_id = ?
+         ) OR EXISTS (
+             SELECT 1 FROM class_teacher_assignments WHERE teacher_id = ?
+         )",
+        [$teacherId, $teacherId]
+    );
+}
+
 /* =========================================================
  * SESSION
  * ========================================================= */
@@ -13,12 +25,15 @@ function auth_start(): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) return;
 
+    $https = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+        || (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443;
+
     session_set_cookie_params([
         'lifetime' => 0,
         'path'     => '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        // 'secure' => true, // enable when you move to HTTPS
+        'secure'   => $https,
     ]);
     session_start();
 
@@ -49,6 +64,10 @@ function auth_user(): ?array
 );
     if (!$row) {
         // user deleted or deactivated mid-session
+        auth_logout();
+        return null;
+    }
+    if ($row['role'] === 'teacher' && (!$row['teacher_id'] || !auth_teacher_has_assignment((int) $row['teacher_id']))) {
         auth_logout();
         return null;
     }
@@ -138,6 +157,10 @@ function auth_attempt(string $username, string $password): array
     }
 
     $ok = $user && password_verify($password, $user['password_hash']);
+    if ($ok && $user['role'] === 'teacher') {
+        $ok = !empty($user['teacher_id'])
+            && auth_teacher_has_assignment((int) $user['teacher_id']);
+    }
 
     if (!$ok) {
         $rl['count']++;
