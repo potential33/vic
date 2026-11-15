@@ -9,15 +9,34 @@ function db(): PDO
         return $pdo;
     }
 
-    $host = getenv('DB_HOST') ?: 'localhost';
-    $port = getenv('DB_PORT') ?: '3306';
-    $name = getenv('DB_NAME');
-    $user = getenv('DB_USER');
-    $password = getenv('DB_PASSWORD');
-    $charset = getenv('DB_CHARSET') ?: 'utf8mb4';
+    $configPath = __DIR__ . '/config.local.php';
+    $localConfig = is_file($configPath) ? require $configPath : [];
+    if (!is_array($localConfig)) {
+        throw new RuntimeException('config.local.php must return an array.');
+    }
 
-    if ($name === false || $name === '' || $user === false || $user === '') {
-        throw new RuntimeException('Set DB_NAME and DB_USER in the environment before connecting.');
+    $setting = static function (string $key, ?string $default = null) use ($localConfig): ?string {
+        $environmentValue = getenv($key);
+        $value = $environmentValue !== false
+            ? $environmentValue
+            : ($localConfig[$key] ?? $default);
+        if ($value !== null && !is_string($value)) {
+            throw new RuntimeException("Invalid database setting: {$key}.");
+        }
+        return $value;
+    };
+
+    $host = $setting('DB_HOST', 'localhost') ?: 'localhost';
+    $port = $setting('DB_PORT', '3306') ?: '3306';
+    $name = $setting('DB_NAME');
+    $user = $setting('DB_USER');
+    $password = $setting('DB_PASSWORD', '') ?? '';
+    $charset = $setting('DB_CHARSET', 'utf8mb4') ?: 'utf8mb4';
+
+    if ($name === null || $name === '' || $user === null || $user === '') {
+        throw new RuntimeException(
+            'Set DB_NAME and DB_USER in the environment or config.local.php.'
+        );
     }
 
     $dsn = sprintf(
@@ -27,7 +46,7 @@ function db(): PDO
         $name,
         $charset
     );
-    $pdo = new PDO($dsn, $user, $password === false ? '' : $password, [
+    $pdo = new PDO($dsn, $user, $password, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,

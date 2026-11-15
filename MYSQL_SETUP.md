@@ -35,6 +35,25 @@ php migrate_reports.php
 php migrate_class_teachers.php
 ```
 
+If the host does not expose environment variables to PHP, create
+`config.local.php` beside `db.php` and outside the public web root:
+
+```php
+<?php
+return [
+    'DB_HOST' => 'host shown by the provider',
+    'DB_PORT' => '3306',
+    'DB_NAME' => 'database name',
+    'DB_USER' => 'database user',
+    'DB_PASSWORD' => 'database password',
+    'DB_CHARSET' => 'utf8mb4',
+];
+```
+
+This file is excluded from Git, and environment variables take precedence
+over its values. Never place it in `public_html` or include it in a deployment
+archive.
+
 For production, leave `APP_DEBUG` unset or set it to `0`, and disable
 `display_errors` in the hosting PHP settings. The application hides exception
 details by default and marks session cookies secure when the request uses
