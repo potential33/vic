@@ -22,10 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = $res['error'];
 }
 ?>
-<div style="max-width:420px; margin:3rem auto;">
-    <div class="card">
-        <h1 style="margin-top:0;">Chibugwu</h1>
-        <p class="muted">Sign in to continue.</p>
+<div class="login-layout">
+    <div class="login-brand">
+        <img src="/assets/logo.svg" alt="" width="58" height="56">
+        <p class="eyebrow">CHIBUGWU SCHOOL PORTAL</p>
+        <h1>Welcome back</h1>
+        <p class="muted">A better-connected school community starts here.</p>
+    </div>
+    <div class="card login-card">
+        <h2>Sign in</h2>
+        <p class="muted">Enter your account details to continue.</p>
 
         <?php if ($error): ?>
             <div class="flash flash-error" style="margin-bottom:1rem;"><?= e($error) ?></div>
@@ -49,8 +55,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </form>
     </div>
-    <p class="muted" style="text-align:center; font-size:.85rem;">
-        
-    
-    </p>
 </div>
